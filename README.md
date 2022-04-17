@@ -1,0 +1,5 @@
+# Unsupervised Learning 
+
+I have another project, [Birdnet-Edge](https://github.com/electricdarb/Birdnet-Edge), that collects a ridiculous amount of data. It is in the range of 10s of thousands to hundreds of thousands of images a day. To deal with this data I need to add an unsupervised aspect since I can't possibly have someone label all this data. Hence, I need to cluster each image. 
+
+The clustering is done in two parts. First, the images are trained using NCE loss with which pushes vectors of similar images together and different images apart. Check [this blog](https://sthalles.github.io/simple-self-supervised-learning/) out for more info. Second, the learned vectors for each image are clustered together by [Kmeans](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html). Now I have groups of similar images together, so rather than labeling one image at a time, I can label one image from each cluster. This makes labeling significantly more effective. 
