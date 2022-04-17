@@ -126,13 +126,20 @@ if __name__ == "__main__":
             # apply transforms, images will be shape (2 * batchsize, ...)
             images = torch.concat([transform_pipe(images) for _ in range(2)], axis = 0)
             
-            # run model and calc loss
+            # run model, laten_spaces shape: (2 * BATCH_SIZE, laten dims)
             laten_spaces = model(images)
 
             # desired shape: (BATCH_SIZE/TRANSFORMS, 2, TRANSFORMS, laten_dims)
+            # 0, 1, 2, 3, 4, 5, 6, 7, 8, ... => | 0, 1, 2, 3 | 4, 5, 6, 7 | 8, ...
+            # 0, 1, 2, 3, 4, 5, 6, 7, 8, ... => | 0, 1, 2, 3 | 4, 5, 6, 7 | 8, ...
+
+            # reshape to (2, BATCH_SIZE, laten_dims)
+            laten_spaces = torch.reshape(laten_spaces, (2, BATCH_SIZE, -1))
+
             # reshape to (2, BATCH_SIZE/TRANSFORMS, TRANSFORMS, laten_dims)
             laten_spaces = torch.reshape(laten_spaces, (2, BATCH_SIZE // TRANSFORMS, TRANSFORMS, -1))
-            # swap axises to (BATCH_SIZE/TRANSFORMS, 2, TRANSFORMS, laten_dims))
+
+            # swap axises to (BATCH_SIZE/TRANSFORMS, 2, TRANSFORMS, laten_dims)
             laten_spaces = torch.transpose(laten_spaces, 0, 1)
             
             # calculate loss 
@@ -146,8 +153,7 @@ if __name__ == "__main__":
             opt.zero_grad()
 
             # modify loss 
-            train_loss += loss.item()
-            losses.append(loss.item())
+            train_loss += loss.item() / (BATCH_SIZE // TRANSFORMS)
 
         train_loss /= len(train_loader)
         scheduler.step()
